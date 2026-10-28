@@ -1,73 +1,106 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Routing struct {
-	store *Store
+	store Store
 	engine *gin.Engine
 }
 
-func NewRouting(store *Store) *Routing {
+func NewRouting(store Store) *Routing {
 	return &Routing{
 		store: store,
 		engine: gin.Default(),
 	}
 }
 
-func (r *Routing) Route() {
+func (r *Routing) Route() error {
 	r.engine.GET("/subject", func(ctx *gin.Context) {
-		subjects := r.store.GetAllSubjects()
-		ctx.IndentedJSON(http.StatusAccepted, subjects)
+		subjects, err := r.store.GetAllSubjects(ctx)
+		switch err {
+		case nil: {
+			ctx.IndentedJSON(http.StatusOK, subjects)
+		}
+		case ErrSubjectNotFound: {
+			ctx.Status(http.StatusNotFound)
+		}
+		default: {
+			ctx.String(http.StatusInternalServerError, err.Error())
+		}
+		}
 	})
 
 	r.engine.GET("/task", func(ctx *gin.Context) {
-		tasks := r.store.GetAllTasks()
-		ctx.IndentedJSON(http.StatusAccepted, tasks)
+		tasks, err := r.store.GetAllTasks(ctx)
+		switch err {
+		case nil: {
+			ctx.IndentedJSON(http.StatusOK, tasks)
+		}
+		case ErrTaskNotFound: {
+			ctx.Status(http.StatusNotFound)
+		}
+		default: {
+			ctx.String(http.StatusInternalServerError, err.Error())
+		}
+		}
 	})
 	
 	r.engine.GET("/subject/:id", func(ctx *gin.Context) {
 		id := SubjectID(ctx.Param("id"))
-		subject := r.store.GetSubject(id)
-		if subject == nil {
-			ctx.String(http.StatusNotFound, fmt.Sprintf("subject with id %s not found", id))
-			return
+		subject, err := r.store.GetSubject(ctx.Request.Context(), id)
+		switch err {
+		case nil: {
+			ctx.IndentedJSON(http.StatusOK, subject)
 		}
-		ctx.IndentedJSON(http.StatusAccepted, subject)
+		case ErrSubjectNotFound: {
+			ctx.Status(http.StatusNotFound)
+		}
+		default: {
+			ctx.String(http.StatusInternalServerError, err.Error())
+		}
+		}
 	})
 
 	r.engine.GET("/task/:id", func(ctx *gin.Context) {
 		id := TaskID(ctx.Param("id"))
-		task := r.store.GetTask(id)
-		if task == nil {
-			ctx.String(http.StatusNotFound, fmt.Sprintf("task with id %s not found", id))
-			return
+		task, err := r.store.GetTask(ctx.Request.Context(), id)
+		switch err {
+		case nil: {
+			ctx.IndentedJSON(http.StatusOK, task)
 		}
-		ctx.IndentedJSON(http.StatusAccepted, task)
+		case ErrTaskNotFound: {
+			ctx.Status(http.StatusNotFound)
+		}
+		default: {
+			ctx.String(http.StatusInternalServerError, err.Error())
+		}
+		}
 	})
 
 	r.engine.POST("/subject", func(ctx *gin.Context) {
 		name := ctx.PostForm("name")
-		subject, err := r.store.StoreSubject(name)		
+		subject, err := r.store.StoreSubject(ctx.Request.Context(), name)		
 		if err != nil {
-			ctx.String(http.StatusAccepted, err.Error())
+			ctx.String(http.StatusInternalServerError, err.Error())
+			return
 		}
-		ctx.IndentedJSON(http.StatusAccepted, subject)
+		ctx.IndentedJSON(http.StatusCreated, subject)
 	})
 
 	r.engine.POST("/task", func(ctx *gin.Context) {
 		name := ctx.PostForm("name")
 		subjectID := SubjectID(ctx.PostForm("subject"))
-		task, err := r.store.StoreTask(name, subjectID)		
+		task, err := r.store.StoreTask(ctx.Request.Context(), name, subjectID)		
 		if err != nil {
-			ctx.String(http.StatusAccepted, err.Error())
+			ctx.String(http.StatusInternalServerError, err.Error())
+			return 
 		}
-		ctx.IndentedJSON(http.StatusAccepted, task)
+		ctx.IndentedJSON(http.StatusCreated, task)
 	})
 
-	r.engine.Run()
+	return r.engine.Run()
 }
