@@ -8,9 +8,9 @@
     <button
       type="button"
       class="rounded-lg border border-indigo-200 bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-indigo-700"
-      onclick="document.getElementById('task-form').classList.toggle('hidden')"
+      onclick="document.getElementById('series-form').classList.toggle('hidden')"
     >
-      New task
+      New assignment series
     </button>
   </div>
 
@@ -48,6 +48,74 @@
       <div class="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
         {{template "statsBar" .Summary}}
       </div>
+
+      <section id="series-form" class="hidden rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">Create assignment series</h2>
+          <button type="button" class="text-sm text-slate-500 hover:text-slate-700" onclick="document.getElementById('series-form').classList.add('hidden')">Close</button>
+        </div>
+        <form hx-post="/ui/series" hx-swap="none" class="grid gap-4 md:grid-cols-2">
+          <div class="md:col-span-2">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-name">Assignment name</label>
+            <input id="series-name" name="name" placeholder="e.g. Exercise Sheet" required class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-subject">Subject</label>
+            <select id="series-subject" name="subject_id" required class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm">
+              {{range .Subjects}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+            </select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-kind">Type</label>
+            <select id="series-kind" name="kind" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"><option value="sheet">Exercise sheet</option><option value="quiz">Quiz</option></select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-requirement">Requirement</label>
+            <select id="series-requirement" name="requirement" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"><option value="required">Compulsory</option><option value="optional">Optional</option></select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-interval">Repeats</label>
+            <select id="series-interval" name="recurrence_interval" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"><option value="weekly">Weekly</option><option value="biweekly">Biweekly</option></select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-start">First release date</label>
+            <input id="series-start" name="start_date" type="date" required class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-until">Repeats until</label>
+            <input id="series-until" name="recurrence_until" type="date" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-release-time">Release time</label>
+            <input id="series-release-time" name="release_time" type="time" value="08:00" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-deadline-day">Deadline weekday</label>
+            <select id="series-deadline-day" name="deadline_weekday" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5" selected>Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-deadline-time">Deadline time</label>
+            <input id="series-deadline-time" name="deadline_time" type="time" value="18:00" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-sheet-url">Sheet URL</label>
+            <input id="series-sheet-url" name="sheet_url" type="url" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-solution-url">Solution URL</label>
+            <input id="series-solution-url" name="solution_url" type="url" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="series-exercise-count">Exercises per release</label>
+            <input id="series-exercise-count" name="exercise_count" type="number" min="1" value="1" required class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm" />
+            <p class="mt-1 text-xs text-slate-500">Each release is generated automatically and gets numbered score rows.</p>
+          </div>
+          <div class="md:col-span-2 flex justify-end gap-3">
+            <button type="reset" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Reset</button>
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Save assignment</button>
+          </div>
+        </form>
+      </section>
 
       <section id="task-form" class="hidden rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
         <div class="mb-4 flex items-center justify-between">
@@ -144,10 +212,25 @@
 
       <section class="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
         <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-slate-900">Tasks</h2>
-          <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">{{len .Tasks}} items</span>
+          <h2 class="text-lg font-semibold text-slate-900">Current assignments</h2>
+          <div class="flex items-center gap-3">
+            <form method="get" action="/" class="flex items-center gap-2">
+              {{if .SelectedSubjectID}}<input type="hidden" name="subject_id" value="{{.SelectedSubjectID}}" />{{end}}
+              <label class="text-xs font-medium text-slate-500" for="status-filter">Status</label>
+              <select id="status-filter" name="status" onchange="this.form.submit()" class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700">
+                <option value="">All</option>
+                <option value="not_started" {{if eq .SelectedStatus "not_started"}}selected{{end}}>Not started</option>
+                <option value="in_progress" {{if eq .SelectedStatus "in_progress"}}selected{{end}}>In progress</option>
+                <option value="finished" {{if eq .SelectedStatus "finished"}}selected{{end}}>Finished</option>
+              </select>
+            </form>
+            <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">{{add (len .Occurrences) (len .Tasks)}} items</span>
+          </div>
         </div>
         <div id="task-list" class="space-y-3">
+          {{range .Occurrences}}
+            {{template "assignmentOccurrence" .}}
+          {{end}}
           {{range .Tasks}}
             {{template "taskRow" .}}
           {{end}}

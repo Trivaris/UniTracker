@@ -7,10 +7,10 @@
   <div class="w-full max-w-xl">
     <div class="mb-1 flex items-center justify-between text-sm text-slate-600">
       <span>{{.Achieved}} / {{.Possible}} pts</span>
-      <span>{{printf "%.0f%%" (divf .Achieved .Possible)}}</span>
+      <span>{{formatPercent .Achieved .Possible}}</span>
     </div>
     <div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-      <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width: {{printf "%.0f%%" (divf .Achieved .Possible)}};"></div>
+      <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width: {{formatPercent .Achieved .Possible}};"></div>
     </div>
   </div>
 </div>

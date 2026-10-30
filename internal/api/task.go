@@ -16,19 +16,21 @@ const (
 )
 
 type Task struct {
-	ID                 TaskID     `json:"id"`
-	Name               string     `json:"name"`
-	SubjectID          SubjectID  `json:"subject_id"`
-	StartDate          *time.Time `json:"start_date,omitempty"`
-	Deadline           *time.Time `json:"deadline,omitempty"`
-	IsRecurring        bool       `json:"is_recurring"`
-	RecurrenceInterval string     `json:"recurrence_interval,omitempty"`
-	RecurrenceUntil    *time.Time `json:"recurrence_until,omitempty"`
-	State              TaskState  `json:"state"`
-	SheetURL           string     `json:"sheet_url,omitempty"`
-	SolutionURL        string     `json:"solution_url,omitempty"`
-	PossiblePoints     *float64   `json:"possible_points,omitempty"`
-	AchievedPoints     *float64   `json:"achieved_points,omitempty"`
+	ID                 TaskID             `json:"id"`
+	Name               string             `json:"name"`
+	SubjectID          SubjectID          `json:"subject_id"`
+	SeriesID           AssignmentSeriesID `json:"series_id,omitempty"`
+	OccurrenceNumber   int                `json:"occurrence_number,omitempty"`
+	StartDate          *time.Time         `json:"start_date,omitempty"`
+	Deadline           *time.Time         `json:"deadline,omitempty"`
+	IsRecurring        bool               `json:"is_recurring"`
+	RecurrenceInterval string             `json:"recurrence_interval,omitempty"`
+	RecurrenceUntil    *time.Time         `json:"recurrence_until,omitempty"`
+	State              TaskState          `json:"state"`
+	SheetURL           string             `json:"sheet_url,omitempty"`
+	SolutionURL        string             `json:"solution_url,omitempty"`
+	PossiblePoints     *float64           `json:"possible_points,omitempty"`
+	AchievedPoints     *float64           `json:"achieved_points,omitempty"`
 }
 
 func NormalizeTaskState(value string) TaskState {

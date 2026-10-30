@@ -1,0 +1,53 @@
+{{define "assignmentOccurrence"}}
+<article class="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <div class="flex flex-wrap items-center gap-2">
+        <h3 class="text-lg font-semibold text-slate-900">{{.Name}}</h3>
+        <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">{{.SubjectName}}</span>
+        <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">{{.Kind}}</span>
+        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-800">{{.Requirement}}</span>
+      </div>
+      <div class="mt-2 flex flex-wrap gap-3 text-sm text-slate-600">
+        <span>Released: {{formatDate .StartDate}}</span>
+        <span>Deadline: {{formatDate .Deadline}}</span>
+        {{if .SheetURL}}<a href="{{.SheetURL}}" target="_blank" rel="noreferrer" class="font-medium text-indigo-700 hover:underline">Sheet</a>{{end}}
+        {{if .SolutionURL}}<a href="{{.SolutionURL}}" target="_blank" rel="noreferrer" class="font-medium text-emerald-700 hover:underline">Solution</a>{{end}}
+      </div>
+    </div>
+    <select
+      name="state"
+      hx-patch="/ui/task/{{.ID}}/state"
+      hx-target="closest article"
+      hx-swap="outerHTML"
+      class="rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium {{stateClass .State}}"
+    >
+      <option value="not_started" {{if eq .State "not_started"}}selected{{end}}>Not Started</option>
+      <option value="in_progress" {{if eq .State "in_progress"}}selected{{end}}>In Progress</option>
+      <option value="finished" {{if eq .State "finished"}}selected{{end}}>Finished</option>
+    </select>
+  </div>
+
+  {{if .Exercises}}
+  <div class="mt-4 divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">
+    {{range .Exercises}}
+    <form class="flex flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between" hx-patch="/ui/exercise/{{.ID}}/points" hx-swap="none">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 text-sm font-medium text-slate-800">
+          <span class="text-slate-500">{{.Number}}.</span>
+          <span>{{.Name}}</span>
+          {{if .LinkURL}}<a href="{{.LinkURL}}" target="_blank" rel="noreferrer" class="text-indigo-700 hover:underline">Link</a>{{end}}
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm text-slate-600">
+        <input type="number" step="0.5" name="achieved_points" value="{{if .AchievedPoints}}{{.AchievedPoints}}{{end}}" placeholder="Achieved" class="w-24 rounded-lg border border-slate-300 px-2 py-1" />
+        <span>/</span>
+        <input type="number" step="0.5" name="possible_points" value="{{if .PossiblePoints}}{{.PossiblePoints}}{{end}}" placeholder="Possible" class="w-24 rounded-lg border border-slate-300 px-2 py-1" />
+        <button type="submit" class="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-indigo-700">Save</button>
+      </div>
+    </form>
+    {{end}}
+  </div>
+  {{end}}
+</article>
+{{end}}

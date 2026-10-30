@@ -4,20 +4,96 @@ import (
 	"context"
 	"maps"
 	"slices"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type InMemoryStore struct {
-	tasks    map[TaskID]*Task
-	subjects map[SubjectID]*Subject
+	tasks     map[TaskID]*Task
+	subjects  map[SubjectID]*Subject
+	series    map[AssignmentSeriesID]*AssignmentSeries
+	exercises map[ExerciseID]*Exercise
 }
 
 func NewMemoryStore() *InMemoryStore {
 	return &InMemoryStore{
-		tasks:    map[TaskID]*Task{},
-		subjects: map[SubjectID]*Subject{},
+		tasks:     map[TaskID]*Task{},
+		subjects:  map[SubjectID]*Subject{},
+		series:    map[AssignmentSeriesID]*AssignmentSeries{},
+		exercises: map[ExerciseID]*Exercise{},
 	}
+}
+
+func (s *InMemoryStore) StoreAssignmentSeries(ctx context.Context, series AssignmentSeries) (*AssignmentSeries, error) {
+	series.Normalize()
+	series.ID = AssignmentSeriesID(s.newID())
+	s.series[series.ID] = &series
+	return &series, nil
+}
+
+func (s *InMemoryStore) GetAssignmentSeries(ctx context.Context, id AssignmentSeriesID) (*AssignmentSeries, error) {
+	series, ok := s.series[id]
+	if !ok {
+		return nil, ErrTaskNotFound
+	}
+	return series, nil
+}
+
+func (s *InMemoryStore) GetAssignmentOccurrences(ctx context.Context, subjectID SubjectID) ([]AssignmentOccurrence, error) {
+	var result []AssignmentOccurrence
+	for _, series := range s.series {
+		if subjectID != "" && series.SubjectID != subjectID {
+			continue
+		}
+		for number, release := range series.OccurrenceDates(time.Now()) {
+			var task *Task
+			for _, candidate := range s.tasks {
+				if candidate.SeriesID == series.ID && candidate.OccurrenceNumber == number+1 {
+					task = candidate
+					break
+				}
+			}
+			if task == nil {
+				deadline := occurrenceDeadline(release, series.DeadlineWeekday, series.DeadlineTime)
+				created, err := s.StoreTask(ctx, Task{Name: occurrenceName(series.Name, number+1), SubjectID: series.SubjectID, SeriesID: series.ID, OccurrenceNumber: number + 1, StartDate: &release, Deadline: &deadline, State: TaskStateNotStarted, SheetURL: series.SheetURL, SolutionURL: series.SolutionURL})
+				if err != nil {
+					return nil, err
+				}
+				task = created
+				for _, template := range series.Exercises {
+					copy := template
+					copy.ID = ExerciseID(s.newID())
+					copy.OccurrenceID = task.ID
+					copy.State = TaskStateNotStarted
+					s.exercises[copy.ID] = &copy
+				}
+			}
+			var exercises []Exercise
+			for _, exercise := range s.exercises {
+				if exercise.OccurrenceID == task.ID {
+					exercises = append(exercises, *exercise)
+				}
+			}
+			subject, _ := s.GetSubject(ctx, task.SubjectID)
+			result = append(result, AssignmentOccurrence{TaskView: TaskView{Task: task, SubjectName: subject.Name}, SeriesID: series.ID, OccurrenceNumber: number + 1, Kind: series.Kind, Requirement: series.Requirement, Exercises: exercises})
+		}
+	}
+	return result, nil
+}
+
+func (s *InMemoryStore) UpdateExercisePoints(ctx context.Context, id ExerciseID, achieved *float64, possible *float64) error {
+	exercise, ok := s.exercises[id]
+	if !ok {
+		return ErrTaskNotFound
+	}
+	if achieved != nil {
+		exercise.AchievedPoints = achieved
+	}
+	if possible != nil {
+		exercise.PossiblePoints = possible
+	}
+	return nil
 }
 
 func (s *InMemoryStore) StoreTask(ctx context.Context, task Task) (*Task, error) {
@@ -106,6 +182,14 @@ func (s *InMemoryStore) newTaskID() TaskID {
 		return "-1"
 	}
 	return TaskID(id.String())
+}
+
+func (s *InMemoryStore) newID() string {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return "-1"
+	}
+	return id.String()
 }
 
 func (s *InMemoryStore) newSubjectID() SubjectID {
