@@ -1,0 +1,159 @@
+{{define "dashboard.html"}}
+<div class="mx-auto max-w-7xl px-4 py-8">
+  <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm font-medium uppercase tracking-[0.2em] text-indigo-600">Unitracker</p>
+      <h1 class="mt-2 text-3xl font-bold text-slate-900">Academic task dashboard</h1>
+    </div>
+    <button
+      type="button"
+      class="rounded-lg border border-indigo-200 bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-soft hover:bg-indigo-700"
+      onclick="document.getElementById('task-form').classList.toggle('hidden')"
+    >
+      New task
+    </button>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+    <aside class="rounded-2xl bg-white p-4 shadow-soft ring-1 ring-slate-200">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-slate-900">Subjects</h2>
+        <span class="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">{{len .Subjects}}</span>
+      </div>
+
+      <form
+        class="mb-5 space-y-3"
+        hx-post="/subject"
+        hx-target="#subject-list"
+        hx-swap="beforeend"
+      >
+        <label class="block text-sm font-medium text-slate-700" for="subject-name">Add subject</label>
+        <input id="subject-name" name="name" placeholder="e.g. Algorithms" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none ring-0 transition focus:border-indigo-400 focus:bg-white" required />
+        <button type="submit" class="w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Save</button>
+      </form>
+
+      <ul id="subject-list" class="space-y-2">
+        <li>
+          <a href="/?" class="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium {{if eq .SelectedSubjectID ""}}bg-indigo-100 text-indigo-700{{else}}text-slate-700 hover:bg-slate-100{{end}}">
+            <span>All subjects</span>
+          </a>
+        </li>
+        {{range .Subjects}}
+          {{template "subjectItem" .}}
+        {{end}}
+      </ul>
+    </aside>
+
+    <main class="space-y-6">
+      <div class="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
+        {{template "statsBar" .Summary}}
+      </div>
+
+      <section id="task-form" class="hidden rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">Create task</h2>
+          <button type="button" class="text-sm text-slate-500 hover:text-slate-700" onclick="document.getElementById('task-form').classList.add('hidden')">Close</button>
+        </div>
+        <form
+          hx-post="/ui/task"
+          hx-target="#task-list"
+          hx-swap="beforeend"
+          class="grid gap-4 md:grid-cols-2"
+        >
+          <div class="md:col-span-2">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="task-name">Task name</label>
+            <input id="task-name" name="name" required class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="task-subject">Subject</label>
+            <select id="task-subject" name="subject_id" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white">
+              {{range .Subjects}}
+              <option value="{{.ID}}">{{.Name}}</option>
+              {{end}}
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="task-state">State</label>
+            <select id="task-state" name="state" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white">
+              <option value="not_started">Not started</option>
+              <option value="in_progress">In progress</option>
+              <option value="finished">Finished</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="start-date">Start date</label>
+            <input id="start-date" name="start_date" type="date" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="deadline">Deadline</label>
+            <input id="deadline" name="deadline" type="date" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input type="checkbox" name="is_recurring" value="true" class="h-4 w-4 rounded border-slate-300 text-indigo-600" />
+              Recurring task
+            </label>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="interval">Recurrence interval</label>
+            <select id="interval" name="recurrence_interval" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white">
+              <option value="">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="biweekly">Biweekly</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="recurrence-until">Recurrence until</label>
+            <input id="recurrence-until" name="recurrence_until" type="date" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="sheet-url">Sheet URL</label>
+            <input id="sheet-url" name="sheet_url" type="url" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="solution-url">Solution URL</label>
+            <input id="solution-url" name="solution_url" type="url" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="possible-points">Possible points</label>
+            <input id="possible-points" name="possible_points" type="number" step="0.5" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="achieved-points">Achieved points</label>
+            <input id="achieved-points" name="achieved_points" type="number" step="0.5" class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-400 focus:bg-white" />
+          </div>
+
+          <div class="md:col-span-2 flex justify-end gap-3">
+            <button type="reset" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">Reset</button>
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Save task</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="rounded-2xl bg-white p-5 shadow-soft ring-1 ring-slate-200">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">Tasks</h2>
+          <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">{{len .Tasks}} items</span>
+        </div>
+        <div id="task-list" class="space-y-3">
+          {{range .Tasks}}
+            {{template "taskRow" .}}
+          {{end}}
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+{{end}}

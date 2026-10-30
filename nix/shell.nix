@@ -5,6 +5,7 @@ pkgs.mkShell {
     pkgs.gopls
     pkgs.jq
     pkgs.docker
+    pkgs.sqlite
   ];
 
 shellHook = ''

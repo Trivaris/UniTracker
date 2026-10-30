@@ -1,0 +1,28 @@
+{{define "layout.html"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unitracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            boxShadow: {
+              soft: '0 10px 30px rgba(15, 23, 42, 0.08)'
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  </head>
+  <body class="bg-slate-100 text-slate-800 antialiased">
+    <div class="min-h-screen">
+      {{template "dashboard.html" .}}
+    </div>
+  </body>
+</html>
+{{end}}

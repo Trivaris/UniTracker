@@ -1,0 +1,13 @@
+{{define "subjectItem"}}
+<li>
+  <a
+    href="/?subject_id={{.ID}}"
+    hx-get="/?subject_id={{.ID}}"
+    hx-target="#task-list"
+    hx-push-url="true"
+    class="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+  >
+    <span>{{.Name}}</span>
+  </a>
+</li>
+{{end}}

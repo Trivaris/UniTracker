@@ -1,0 +1,17 @@
+{{define "statsBar"}}
+<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+  <div>
+    <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">Subject summary</p>
+    <h3 class="mt-1 text-xl font-semibold text-slate-900">{{.SubjectName}}</h3>
+  </div>
+  <div class="w-full max-w-xl">
+    <div class="mb-1 flex items-center justify-between text-sm text-slate-600">
+      <span>{{.Achieved}} / {{.Possible}} pts</span>
+      <span>{{printf "%.0f%%" (divf .Achieved .Possible)}}</span>
+    </div>
+    <div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
+      <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width: {{printf "%.0f%%" (divf .Achieved .Possible)}};"></div>
+    </div>
+  </div>
+</div>
+{{end}}

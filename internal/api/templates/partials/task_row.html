@@ -1,0 +1,87 @@
+{{define "taskRow"}}
+<article class="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center gap-2">
+        <h3 class="text-lg font-semibold text-slate-900">{{.Name}}</h3>
+        <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">{{.SubjectName}}</span>
+        {{if .IsRecurring}}
+        <span class="rounded-full bg-indigo-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700">↻ {{.RecurrenceInterval}}</span>
+        {{end}}
+      </div>
+      <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+        <span>Start: {{formatDate .StartDate}}</span>
+        <span>Deadline: {{formatDate .Deadline}}</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <select
+        name="state"
+        hx-patch="/ui/task/{{.ID}}/state"
+        hx-target="#task-list"
+        hx-swap="innerHTML"
+        class="rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium {{stateClass .State}}"
+      >
+        <option value="not_started" {{if eq .State "not_started"}}selected{{end}}>Not Started</option>
+        <option value="in_progress" {{if eq .State "in_progress"}}selected{{end}}>In Progress</option>
+        <option value="finished" {{if eq .State "finished"}}selected{{end}}>Finished</option>
+      </select>
+
+      <button
+        type="button"
+        hx-delete="/ui/task/{{.ID}}"
+        hx-target="closest article"
+        hx-swap="outerHTML"
+        class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      {{if .SheetURL}}<a href="{{.SheetURL}}" target="_blank" rel="noreferrer" class="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 font-medium text-indigo-700 hover:bg-indigo-100">Sheet</a>{{end}}
+      {{if .SolutionURL}}<a href="{{.SolutionURL}}" target="_blank" rel="noreferrer" class="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 font-medium text-emerald-700 hover:bg-emerald-100">Solution</a>{{end}}
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 text-sm text-slate-600">
+        <label class="font-medium">Achieved</label>
+        <input
+          type="number"
+          step="0.5"
+          value="{{if .AchievedPoints}}{{.AchievedPoints}}{{end}}"
+          name="achieved_points"
+          class="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+        />
+      </div>
+      <span class="text-slate-400">/</span>
+      <div class="flex items-center gap-2 text-sm text-slate-600">
+        <label class="font-medium">Possible</label>
+        <input
+          type="number"
+          step="0.5"
+          value="{{if .PossiblePoints}}{{.PossiblePoints}}{{end}}"
+          name="possible_points"
+          class="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm"
+        />
+      </div>
+      <button type="button" class="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white" hx-patch="/ui/task/{{.ID}}/points" hx-include="closest article" hx-target="#task-list" hx-swap="innerHTML">Save</button>
+    </div>
+  </div>
+
+  {{if .PossiblePoints}}
+  <div class="mt-4">
+    <div class="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
+      <span>Progress</span>
+      <span>{{printf "%.0f%%" (pointsPercent .)}}</span>
+    </div>
+    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+      <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500" style="width: {{printf "%.0f%%" (pointsPercent .)}};"></div>
+    </div>
+  </div>
+  {{end}}
+</article>
+{{end}}
